@@ -136,17 +136,18 @@ def post_save(sender, instance, created, raw, using, update_fields, **kwargs):
                                     if callable(callback))
 
             # create crud event only if all callbacks returned True
-            if create_crud_event and created:
-                crud_event = CRUDEvent.objects.create(
-                    event_type=event_type,
-                    object_repr=str(instance),
-                    object_json_repr=object_json_repr,
-                    content_type=ContentType.objects.get_for_model(instance),
-                    object_id=instance.pk,
-                    user=user,
-                    datetime=timezone.now(),
-                    user_pk_as_string=str(user.pk) if user else user
-                )
+            if user:
+                if create_crud_event and created:
+                    crud_event = CRUDEvent.objects.create(
+                        event_type=event_type,
+                        object_repr=str(instance),
+                        object_json_repr=object_json_repr,
+                        content_type=ContentType.objects.get_for_model(instance),
+                        object_id=instance.pk,
+                        user=user,
+                        datetime=timezone.now(),
+                        user_pk_as_string=str(user.pk) if user else user
+                    )
     except Exception:
         logger.exception('easy audit had a post-save exception.')
 
@@ -207,6 +208,7 @@ def m2m_changed(sender, instance, action, reverse, model, pk_set, using, **kwarg
 
             if isinstance(user, AnonymousUser):
                 user = None
+
             if user:
                 crud_event = CRUDEvent.objects.create(
                     event_type=event_type,
