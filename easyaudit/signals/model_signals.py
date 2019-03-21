@@ -53,7 +53,11 @@ def pre_save(sender, instance, raw, using, update_fields, **kwargs):
         with transaction.atomic():
             if not should_audit(instance):
                 return False
-            object_json_repr = serializers.serialize("json", [instance])
+
+            try:
+                object_json_repr = serializers.serialize("json", [instance])
+            except:
+                object_json_repr = None
 
             if instance.pk is None:
                 created = True
